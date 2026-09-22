@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <script src="/userProtect.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gloss Matrix Josje-Board</title>
+    <!-- Replace mini.css with Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Helvetica, sans-serif;
+            padding-top: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .container-fluid {
+            padding: 0 20px;
+        }
+        
+        .card {
+            margin-bottom: 1.5rem;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+            border: none;
+            border-radius: 0.5rem;
+        }
+        
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            z-index: 10;
+            border-top: none;
+        }
+        
+        .table th:first-child,
+        .table td:first-child {
+            width: 20%;
+        }
+        
+        .table th:nth-child(2),
+        .table td:nth-child(2) {
+            width: 10%;
+        }
+        
+        .table th:nth-child(n+3),
+        .table td:nth-child(n+3) {
+            width: 10%;
+        }
+        
+        .matrix-cell {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .matrix-cell:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+        
+        .matrix-cell.active {
+            background-color: rgba(13, 110, 253, 0.2);
+        }
+        
+        .label-cell {
+            text-align: left;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            position: sticky;
+            left: 0;
+            background-color: #fff;
+            z-index: 5;
+        }
+        
+        .details-panel {
+            margin-top: 20px;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            display: none;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+        }
+        
+        .badge {
+            padding: 0.25em 0.65em;
+            font-weight: 500;
+            border-radius: 50rem;
+        }
+        
+        .gloss-list {
+            max-height: 60vh;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        
+        .sentence-item {
+            margin-bottom: 10px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .gloss-item {
+            padding: 15px;
+            margin: 0.5rem 0;
+            border-radius: 0.375rem;
+            border: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background-color: #fff;
+        }
+        
+        .gloss-info {
+            flex: 1;
+        }
+        
+        .sentences-container {
+            margin-top: 1rem;
+            padding-left: 1rem;
+            border-left: 3px solid #e9ecef;
+        }
+        
+        .no-results {
+            font-style: italic;
+            color: #6c757d;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .loading:after {
+            content: "...";
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+        
+        .navbar {
+            background-color: #fff;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+            margin-bottom: 2rem;
+        }
+        
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+        
+        .count-badge {
+            padding: 0.25em 0.6em;
+            font-size: 0.75em;
+            font-weight: 500;
+            border-radius: 50rem;
+            color: #fff;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.2rem;
+        }
+        
+        footer {
+            margin-top: 2rem;
+            padding: 1.5rem 0;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1">Gloss Matrix Josje-Board</span>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="index.html">Matrix</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="words_manager.php">Woorden beheer</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="batch_add.php">Batch toevoegen</a>
+                        </li>
+                    </ul>
+                </div>
+                <div id="loadingStatus" class="ms-auto text-muted me-3"></div>
+                <div id="progressContainer" class="ms-auto me-3" style="display: none;">
+                    <div class="progress" style="height: 20px; width: 200px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div id="progressText" class="small text-muted text-center" style="font-size: 0.75rem; margin-top: 2px;"></div>
+                </div>
+                <button id="refreshCacheBtn" class="btn btn-outline-primary btn-sm">Refresh Cache</button>
+            </div>
+        </nav>
+        
+        <main>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Woordenlijsten Matrix</h5>
+                            <div id="matrixStats" class="text-muted small"></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Label</th>
+                                            <th>Totaal</th>
+                                            <th>0</th>
+                                            <th>1</th>
+                                            <th>2</th>
+                                            <th>3</th>
+                                            <th>4</th>
+                                            <th>5</th>
+                                            <th>5+</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="matrixBody">
+                                        <tr>
+                                            <td colspan="9" class="loading">Data laden</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="detailsPanel" class="details-panel">
+                        <h5 id="detailsTitle" class="mb-3">Woorden Details</h5>
+                        <div id="glossDetails" class="gloss-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> NGT Signbank</p>
+        </footer>
+    </div>
+    
+    <!-- Add Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const matrixBody = document.getElementById('matrixBody');
+            const detailsPanel = document.getElementById('detailsPanel');
+            const detailsTitle = document.getElementById('detailsTitle');
+            const glossDetails = document.getElementById('glossDetails');
+            const loadingStatus = document.getElementById('loadingStatus');
+            const matrixStats = document.getElementById('matrixStats');
+            const refreshCacheBtn = document.getElementById('refreshCacheBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            let progressInterval;
+
+            // Function to fetch and display progress
+            function fetchProgress() {
+                fetch('fetch_matrix_progress.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.percentage !== null && data.percentage >= 0) {
+                            progressBar.style.width = data.percentage + '%';
+                            progressBar.setAttribute('aria-valuenow', data.percentage);
+                            progressText.textContent = data.message + ' (' + data.percentage + '%) ';
+                            if (data.percentage >= 100 || data.percentage < 0) { // also stop on error (percentage < 0)
+                                clearInterval(progressInterval);
+                                progressContainer.style.display = 'none';
+                                if (data.percentage < 0){
+                                    loadingStatus.textContent = 'Fout bij genereren: ' + data.message;
+                                }
+                            }
+                        } else if (data.message) {
+                             // Display messages even if percentage is null (e.g., error reading progress file)
+                            progressText.textContent = data.message;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching progress:', error);
+                        progressText.textContent = 'Fout bij ophalen progressie.';
+                        clearInterval(progressInterval);
+                        // Don't hide progressContainer on fetch error, so user sees the error message
+                    });
+            }
+            
+            // Function to load matrix data
+            function loadMatrixData(refresh = false) {
+                loadingStatus.textContent = 'Laden van matrix data...';
+                matrixBody.innerHTML = '<tr><td colspan="9" class="loading">Data laden</td></tr>';
+                detailsPanel.style.display = 'none';
+                refreshCacheBtn.disabled = true; // Disable button during load
+
+                if (refresh) {
+                    progressContainer.style.display = 'block';
+                    progressBar.style.width = '0%';
+                    progressBar.setAttribute('aria-valuenow', 0);
+                    progressText.textContent = 'Initialiseren...';
+                    if (progressInterval) clearInterval(progressInterval); // Clear any existing interval
+                    progressInterval = setInterval(fetchProgress, 500); // Poll every 500ms
+                }
+                
+                const fetchUrl = refresh ? 'fetch_matrix_data.php?refresh=true' : 'fetch_matrix_data.php';
+                
+                fetch(fetchUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update matrix statistics
+                            let statsHtml = `
+                                <span>Totaal aantal labels: <strong>${data.labelCount}</strong></span> &middot; 
+                                <span>Totaal aantal woorden: <strong>${data.totalGlosses}</strong></span>
+                            `;
+                            if (data.lastRefreshed) {
+                                const refreshedDate = new Date(data.lastRefreshed * 1000);
+                                statsHtml += ` &middot; <span>Cache van: <strong>${refreshedDate.toLocaleString()}</strong></span>`;
+                            }
+                            matrixStats.innerHTML = statsHtml;
+                            
+                            // Build matrix rows
+                            matrixBody.innerHTML = '';
+                            data.matrix.forEach(row => {
+                                const tr = document.createElement('tr');
+                                
+                                // Label cell with color
+                                const labelCell = document.createElement('td');
+                                labelCell.className = 'label-cell';
+                                labelCell.style.borderLeft = `4px solid ${row.color}`;
+                                labelCell.textContent = row.label;
+                                tr.appendChild(labelCell);
+                                
+                                // Total words cell
+                                const totalCell = document.createElement('td');
+                                totalCell.textContent = row.totalGlosses;
+                                totalCell.className = 'fw-medium';
+                                tr.appendChild(totalCell);
+                                
+                                // Occurrence count cells
+                                [0, 1, 2, 3, 4, 5, '5+'].forEach(count => {
+                                    const cell = document.createElement('td');
+                                    cell.className = 'matrix-cell';
+                                    cell.dataset.label = row.label;
+                                    cell.dataset.count = count;
+                                    cell.dataset.color = row.color;
+                                    cell.textContent = row.occurrenceCounts[count];
+                                    
+                                    // Add click event listener
+                                    cell.addEventListener('click', function() {
+                                        // Remove active class from all cells
+                                        document.querySelectorAll('.matrix-cell').forEach(c => 
+                                            c.classList.remove('active'));
+                                        
+                                        // Add active class to clicked cell
+                                        this.classList.add('active');
+                                        
+                                        // Show word details
+                                        showGlossDetails(row.label, count, row.color);
+                                    });
+                                    
+                                    tr.appendChild(cell);
+                                });
+                                
+                                matrixBody.appendChild(tr);
+                            });
+                            
+                            loadingStatus.textContent = 'Matrix data geladen';
+                            if (data.dataSource === 'cache' && data.lastRefreshed) {
+                                const refreshedDate = new Date(data.lastRefreshed * 1000);
+                                loadingStatus.textContent += ' (van cache, vernieuwd op ' + refreshedDate.toLocaleString() + ')';
+                            } else if (data.dataSource === 'generated' && data.lastRefreshed) {
+                                const refreshedDate = new Date(data.lastRefreshed * 1000);
+                                loadingStatus.textContent += ' (nieuw gegenereerd, opgeslagen op ' + refreshedDate.toLocaleString() + ')';
+                            }
+                            setTimeout(() => { loadingStatus.textContent = ''; }, 3000); // Increased timeout for longer message
+                        } else {
+                            loadingStatus.textContent = `Fout bij laden: ${data.error}`;
+                            
+                            // Check for collation/encoding errors
+                            const errorMessage = data.error.toString();
+                            if (errorMessage.includes('collation') || errorMessage.includes('utf8') || 
+                                errorMessage.includes('latin1') || errorMessage.includes('character set')) {
+                                
+                                // Display more informative error message with troubleshooting advice
+                                matrixBody.innerHTML = `
+                                    <tr>
+                                        <td colspan="9" class="no-results">
+                                            <div class="alert alert-danger">
+                                                <h5>Database karakterset probleem gedetecteerd</h5>
+                                                <p><strong>Foutmelding:</strong> ${data.error}</p>
+                                                <hr>
+                                                <p><strong>Mogelijke oplossing:</strong></p>
+                                                <ul>
+                                                    <li>Dit is een probleem met verschillende karaktersets in de database (collation conflict).</li>
+                                                    <li>Neem contact op met de database beheerder om de karakterset van alle tabellen te controleren.</li>
+                                                    <li>Alle tabellen en kolommen moeten dezelfde karakterset gebruiken (aanbevolen: utf8mb4_unicode_ci).</li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                            } else {
+                                matrixBody.innerHTML = `<tr><td colspan="9" class="no-results">Fout bij laden van matrix data: ${data.error}</td></tr>`;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        loadingStatus.textContent = 'Fout bij laden';
+                        matrixBody.innerHTML = `<tr><td colspan="9" class="no-results">Fout bij laden van matrix data: ${error.message}</td></tr>`;
+                        console.error('Error loading matrix data:', error);
+                    })
+                    .finally(() => {
+                        refreshCacheBtn.disabled = false; // Re-enable button
+                        if (refresh) {
+                            // Ensure progress interval is cleared if main fetch finishes/errors before progress hits 100%
+                            // Small delay to allow final progress update to be fetched
+                            setTimeout(() => {
+                                clearInterval(progressInterval);
+                                progressContainer.style.display = 'none';
+                            }, 1000); 
+                        }
+                    });
+            }
+            
+            // Load matrix data on initial page load
+            loadMatrixData();
+
+            // Add event listener for the refresh button
+            refreshCacheBtn.addEventListener('click', function() {
+                loadMatrixData(true);
+            });
+            
+            // Function to show word details when a cell is clicked
+            function showGlossDetails(label, count, color) {
+                detailsTitle.innerHTML = `<span class="loading">Woorden laden</span>`;
+                glossDetails.innerHTML = '';
+                detailsPanel.style.display = 'block';
+                
+                // Note: fetch_gloss_details.php is expected to implement server-side caching.
+                // Its cache is invalidated when the main "Refresh Cache" button is used,
+                // as fetch_matrix_data.php?refresh=true should handle clearing all related caches.
+                fetch(`fetch_gloss_details.php?label=${encodeURIComponent(label)}&count=${count}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const occurrenceText = count === '5+' ? '5 of meer' : count;
+                            
+                            detailsTitle.innerHTML = `
+                                <span class="badge bg-${getBadgeColor(color)}">${label}</span>
+                                Woorden met ${occurrenceText} voorkomens (${data.glosses.length})
+                            `;
+                            
+                            if (data.glosses.length === 0) {
+                                glossDetails.innerHTML = '<div class="no-results">Geen woorden gevonden voor deze categorie.</div>';
+                            } else {
+                                // Create word list
+                                glossDetails.innerHTML = '';
+                                
+                                data.glosses.forEach(item => {
+                                    const glossItem = document.createElement('div');
+                                    glossItem.className = 'gloss-item';
+                                    
+                                    const glossInfo = document.createElement('div');
+                                    glossInfo.className = 'gloss-info';
+                                    
+                                    const glossName = document.createElement('h6');
+                                    glossName.className = 'mb-2';
+                                    glossName.textContent = item.woord;
+                                    glossInfo.appendChild(glossName);
+                                    
+                                    const countBadge = document.createElement('span');
+                                    countBadge.className = 'badge bg-' + getCountColor(item.count);
+                                    countBadge.textContent = `${item.count} voorkomens`;
+                                    glossInfo.appendChild(countBadge);
+                                    
+                                    glossItem.appendChild(glossInfo);
+                                    
+                                    // Add sentences container if count > 0
+                                    if (item.count > 0) {
+                                        const sentencesContainer = document.createElement('div');
+                                        sentencesContainer.className = 'sentences-container';
+                                        
+                                        const fetchButton = document.createElement('button');
+                                        fetchButton.className = 'btn btn-primary btn-sm';
+                                        fetchButton.textContent = 'Toon zinnen';
+                                        fetchButton.addEventListener('click', function() {
+                                            if (sentencesContainer.querySelector('.sentence-item')) {
+                                                // Toggle visibility if already loaded
+                                                const items = sentencesContainer.querySelectorAll('.sentence-item');
+                                                items.forEach(item => {
+                                                    item.style.display = item.style.display === 'none' ? 'block' : 'none';
+                                                });
+                                                fetchButton.textContent = items[0].style.display === 'none' ? 'Toon zinnen' : 'Verberg zinnen';
+                                            } else {
+                                                // Load sentences
+                                                fetchButton.disabled = true;
+                                                fetchButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Laden...';
+                                                
+                                                fetch(`fetch_sentences.php?woord=${encodeURIComponent(item.woord)}`)
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        fetchButton.disabled = false;
+                                                        
+                                                        if (data.success && data.sentences.length > 0) {
+                                                            data.sentences.forEach(sentence => {
+                                                                const sentenceItem = document.createElement('div');
+                                                                sentenceItem.className = 'sentence-item';
+                                                                
+                                                                // Build sentence text from zinArray if available
+                                                                let sentenceText = 'Geen zin beschikbaar';
+                                                                if (sentence.zinString) {
+                                                                    try {
+                                                                        sentenceText = sentence.zinString
+                                                                    } catch (e) {
+                                                                        console.error('Error parsing zinArray:', e);
+                                                                    }
+                                                                }
+                                                                
+                                                                sentenceItem.innerHTML = `
+                                                                    <div class="small text-muted mb-1">ID: ${sentence.ID}</div>
+                                                                    <div>${sentenceText}</div>
+                                                                `;
+                                                                sentencesContainer.appendChild(sentenceItem);
+                                                            });
+                                                            
+                                                            fetchButton.textContent = 'Verberg zinnen';
+                                                        } else {
+                                                            sentencesContainer.innerHTML = '<div class="no-results">Geen zinnen gevonden.</div>';
+                                                            fetchButton.textContent = 'Geen zinnen';
+                                                        }
+                                                    })
+                                                    .catch(error => {
+                                                        fetchButton.disabled = false;
+                                                        fetchButton.textContent = 'Fout bij laden';
+                                                        sentencesContainer.innerHTML = `<div class="no-results">Fout: ${error.message}</div>`;
+                                                        console.error('Error fetching sentences:', error);
+                                                    });
+                                            }
+                                        });
+                                        
+                                        glossItem.appendChild(fetchButton);
+                                        glossItem.appendChild(sentencesContainer);
+                                    }
+                                    
+                                    glossDetails.appendChild(glossItem);
+                                });
+                            }
+                        } else {
+                            detailsTitle.innerHTML = 'Woorden Details';
+                            glossDetails.innerHTML = `<div class="alert alert-danger">Fout bij laden van woorden: ${data.error}</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        detailsTitle.innerHTML = 'Woorden Details';
+                        glossDetails.innerHTML = `<div class="alert alert-danger">Fout bij laden van woorden: ${error.message}</div>`;
+                        console.error('Error loading word details:', error);
+                    });
+            }
+            
+            // Helper function to get Bootstrap color based on count
+            function getCountColor(count) {
+                if (count === 0) return 'secondary'; // gray
+                if (count === 1) return 'info'; // info
+                if (count <= 3) return 'success'; // success
+                if (count <= 5) return 'warning'; // warning
+                return 'danger'; // danger
+            }
+            
+            // Convert any hex color to the closest Bootstrap color
+            function getBadgeColor(hexColor) {
+                // Default to primary if conversion fails
+                if (!hexColor) return 'primary';
+                
+                // Simple mapping based on common colors
+                const hexLower = hexColor.toLowerCase();
+                if (hexLower.includes('red') || hexLower.includes('f00') || hexLower.includes('d33')) return 'danger';
+                if (hexLower.includes('blue') || hexLower.includes('00f') || hexLower.includes('07f')) return 'primary';
+                if (hexLower.includes('green') || hexLower.includes('0f0') || hexLower.includes('2c0')) return 'success';
+                if (hexLower.includes('yellow') || hexLower.includes('ff0') || hexLower.includes('fd7')) return 'warning';
+                if (hexLower.includes('cyan') || hexLower.includes('0ff') || hexLower.includes('17a')) return 'info';
+                if (hexLower.includes('magenta') || hexLower.includes('f0f') || hexLower.includes('e83')) return 'danger';
+                if (hexLower.includes('gray') || hexLower.includes('grey') || hexLower.includes('888')) return 'secondary';
+                if (hexLower.includes('black') || hexLower.includes('000')) return 'dark';
+                
+                // Default to primary for other colors
+                return 'primary';
+            }
+        });
+    </script>
+</body>
+</html>
