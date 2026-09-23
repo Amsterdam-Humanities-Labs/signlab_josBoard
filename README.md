@@ -1,20 +1,35 @@
 # signlab_josBoard
-Word/sentence board from the core server (/web/josBoard).
+Web pages that show how often each target word occurs in the SignCollect sentences (the "Josje-Board").
 
 ## What it does
-Code copied read-only from `/web/josBoard` on the core server (2026-09-22), so it is no longer only on one machine. Data files, logs and caches were left out.
+- `index.html` (Gloss Matrix): per label, it counts how many sentences contain each word from table `jb_woorden`. It matches on `sentences.lemmaList`. Data comes from `fetch_matrix_data.php`, `fetch_gloss_details.php` and `fetch_sentences.php`. Results are cached for 24 hours.
+- `words_manager.php`, `edit_word.php`, `batch_add.php`: list, edit and bulk-add words in `jb_woorden`.
+- `addZinnen.php`, `editSentence.php`, `deleteSentence.php`: JSON endpoints that add, edit and delete sentences (zinnen). `addZinnen.html` also calls `getZinnen.php`, which is not in this repo.
+- `lemma_lookup.py`: fills `sentences.lemmaList` from `sentences.zinString`, using lemmas in `hh_words`. [signlab_pythonCron](https://github.com/Amsterdam-Humanities-Labs/signlab_pythonCron) runs it hourly.
+- One-off tools: `update_jb_lemmas.py`, `getUniqueWords.py`, `searchWordInSentences.py` (fill lemmas), `backup_sentences_table.php`, `compare_csv_sentences.php`, `update_sentences_from_csv.php`, `csv/compare_csv.py` (sentence CSV checks).
 
 ## Where it runs
-The core server, `/web/josBoard`. The server still runs its own copy; this repo is not deployed yet.
+The core server: `/web/josBoard`, URL `https://signcollect.nl/josBoard/`.
+The server runs its own copy. This repo is a backup of that code and is not deployed yet.
 
 ## Status
-Production (copy). See [signlab_signcollect-stack#35](https://github.com/Amsterdam-Humanities-Labs/signlab_signcollect-stack/issues/35).
+Production (copy of the live code, 2026-09-22). See [signlab_signcollect-stack#35](https://github.com/Amsterdam-Humanities-Labs/signlab_signcollect-stack/issues/35).
 
 ## How to run or deploy
-Not deployed from here yet. Scripts run on the core server, some from pythonCron.
+Not deployed from here. Open `https://signcollect.nl/josBoard/`. Only `index.html` checks the login (`/userProtect.js`); the PHP pages do not.
+The CSV scripts run from the command line, for example:
+```
+php update_sentences_from_csv.php --dry-run
+```
+They read `csv/zinnen_old.csv` and `csv/zinnen_new.csv` (not in git).
 
 ## Configuration
-Credentials were removed from the code. Scripts read them from environment variables: `DB_PASS`, `SIGNBANK_API_KEY`, `SIGNBANK_CSRFTOKEN`, `SIGNBANK_SESSIONID`, `OPENROUTER_API_KEY`. PHP files include `../mysql_config.php` (not in git).
+- PHP: `../mysql_config.php` (not in git) sets `$servername`, `$username`, `$password`, `$database`.
+- Python: environment variable `DB_PASS`. `searchWordInSentences.py` also needs `OPENROUTER_API_KEY`.
+- `lemma_lookup.py` imports `ClientMonitor` from `/home/gomer/pythonCron`.
+- Cache files are written next to the scripts: `matrix_data_cache.json`, `matrix_progress.json`, `details_cache/`, `sentences_cache/`, `backup/`.
 
 ## Dependencies
-MySQL database `admin_gebarenoverleg`; Signbank.
+- MySQL database `admin_gebarenoverleg`: tables `jb_woorden`, `sentences`, `sentences_logs`, `hh_words`, `labels`.
+- `/uniqueLabels.php` and `/userProtect.js` on the core server docroot.
+- Python: `mysql-connector-python`; the lemma tools also use `spacy` (`nl_core_news_lg`) and `pattern`.
