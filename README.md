@@ -33,3 +33,10 @@ They read `csv/zinnen_old.csv` and `csv/zinnen_new.csv` (not in git).
 - MySQL database `admin_gebarenoverleg`: tables `jb_woorden`, `sentences`, `sentences_logs`, `hh_words`, `labels`.
 - `/uniqueLabels.php` and `/userProtect.js` on the core server docroot.
 - Python: `mysql-connector-python`; the lemma tools also use `spacy` (`nl_core_news_lg`) and `pattern`.
+
+## License and citation
+
+Apache License 2.0, copyright University of Amsterdam: see [LICENSE](LICENSE) and
+[NOTICE](NOTICE). You may use it, also commercially, as long as you credit
+Gomer Otterspeer / University of Amsterdam as the source. To cite it, use
+[CITATION.cff](CITATION.cff) (the *Cite this repository* button on GitHub) or the DOI [10.21942/uva.33980338](https://doi.org/10.21942/uva.33980338).
